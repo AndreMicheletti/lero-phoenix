@@ -7,7 +7,7 @@ defmodule Lero.AccountsTest do
   describe "users" do
     alias Lero.Accounts.User
 
-    @valid_attrs %{name: "some name", description: "some description", secret_code: "123"}
+    @valid_attrs %{name: "some name", description: "some description", secret_code: "123", hashed_password: "123"}
 
     def user_fixture(attrs \\ %{}) do
       {:ok, user} =

@@ -6,6 +6,7 @@ defmodule Lero.Repo.Migrations.CreateUsers do
       add :name, :string
       add :description, :string
       add :secret_code, :string
+      add :hashed_password, :string
 
       timestamps()
     end
