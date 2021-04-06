@@ -7,6 +7,9 @@ defmodule LeroWeb.Router do
 
   scope "/api", LeroWeb do
     pipe_through :api
+    resources "/user", UserController
+    resources "/message", MessageController
+    resources "/conversation", ConversationController
   end
 
   # Enables LiveDashboard only for development

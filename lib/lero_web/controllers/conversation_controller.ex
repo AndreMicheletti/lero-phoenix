@@ -6,7 +6,7 @@ defmodule LeroWeb.ConversationController do
 
   def index(conn, _params) do
     conversations = Messaging.list_conversations()
-    render(conn, "index.html", conversations: conversations)
+    json(conn, %{ conversations: conversations })
   end
 
   def new(conn, _params) do
