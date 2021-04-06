@@ -13,18 +13,47 @@ defmodule Lero.MessagingTest do
       conversation
     end
 
-    test "start_conversation/1 with valid data creates a conversation" do
+    test "start_conversation/2 with valid data creates a conversation" do
       user1 = Accounts.get_user_by_name("User 1")
       user2 = Accounts.get_user_by_name("User 2")
       assert {:ok, %Conversation{} = conversation} = Messaging.start_conversation(user1.id, user2.id)
     end
 
-    test "start_conversation/1 with duplicate data doesn't create a conversation" do
+    test "start_conversation/2 with duplicate data doesn't create a conversation" do
       user1 = Accounts.get_user_by_name("User 1")
       user2 = Accounts.get_user_by_name("User 2")
       conversation = conversation_fixture(%{ title: "Conversation", participants: [user1.id, user2.id] })
       assert {:error, _} = Messaging.start_conversation(user1.id, user2.id)
       assert {:error, _} = Messaging.start_conversation(user2.id, user1.id)
+    end
+
+    test "find_conversation/2 with finds the correct conversation" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ title: "Conversation", participants: [user1.id, user2.id] })
+      conversation1 = Messaging.find_or_start_conversation(user1.id, user2.id)
+      conversation2 = Messaging.find_or_start_conversation(user2.id, user1.id)
+      assert conversation.id == conversation1.id
+      assert conversation.id == conversation2.id
+      assert conversation1.id == conversation2.id
+    end
+
+    test "find_or_start_conversation/2 with valid data creates a conversation" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = Messaging.find_or_start_conversation(user1.id, user2.id)
+      assert conversation.id
+    end
+
+    test "find_or_start_conversation/2 with duplicate data doesn't create a conversation" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ title: "Conversation", participants: [user1.id, user2.id] })
+      conversation1 = Messaging.find_or_start_conversation(user1.id, user2.id)
+      conversation2 = Messaging.find_or_start_conversation(user2.id, user1.id)
+      assert conversation.id == conversation1.id
+      assert conversation.id == conversation2.id
+      assert conversation1.id == conversation2.id
     end
   end
 
@@ -33,18 +62,55 @@ defmodule Lero.MessagingTest do
     setup [:create_users]
 
     def message_fixture(attrs \\ %{}) do
-      {:ok, message} =
-        attrs
-        |> Enum.into(@valid_attrs)
-        |> Messaging.create_message()
-
+      {:ok, message} = Messaging.create_message(attrs)
       message
+    end
+
+    def conversation_fixture_2(attrs \\ %{}) do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      {:ok, conversation} =
+        attrs
+          |> Enum.into(%{ title: nil, participants: [user1.id, user2.id]})
+          |> Messaging.create_conversation()
+      conversation
+    end
+
+    test "get_message!/1 by id works" do
+      user1 = Accounts.get_user_by_name("User 1")
+      conversation = conversation_fixture_2()
+      message = message_fixture(%{ content: "abc123", user_id: user1.id, conversation_id: conversation.id })
+      fetched = Messaging.get_message!(message.id)
+      assert message.id == fetched.id
+      assert message.conversation_id == conversation.id
+      assert message.user_id == user1.id
+    end
+
+    test "send_message_to/3 creates a new conversation" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      assert Messaging.find_conversation(user1.id, user2.id) == nil
+
+      {:ok, message} = Messaging.send_message_to(user1.id, user2.id, "random text")
+
+      assert Messaging.find_conversation(user1.id, user2.id) != nil
+      assert Messaging.find_conversation(user2.id, user1.id) != nil
+      assert message.conversation_id == Messaging.find_conversation(user1.id, user2.id).id
+    end
+
+    test "send_message_to/3 uses a existing conversation" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture_2()
+
+      {:ok, message} = Messaging.send_message_to(user1.id, user2.id, "random text")
+      assert message.conversation_id == conversation.id
     end
   end
 
   defp create_users(_) do
-    user1 = Accounts.create_user(%{name: "User 1", description: "hello world", secret_code: "mycode"})
-    user2 = Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo"})
+    Accounts.create_user(%{name: "User 1", description: "hello world", secret_code: "mycode"})
+    Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo"})
     :ok
   end
 end

@@ -14,7 +14,7 @@ defmodule Lero.Messaging.Message do
   @doc false
   def changeset(message, attrs) do
     message
-    |> cast(attrs, [:content])
-    |> validate_required([:content])
+    |> cast(attrs, [:content, :conversation_id, :user_id])
+    |> validate_required([:content, :conversation_id, :user_id])
   end
 end
