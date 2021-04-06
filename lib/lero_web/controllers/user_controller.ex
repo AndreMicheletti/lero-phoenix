@@ -8,10 +8,11 @@ defmodule LeroWeb.UserController do
     json(conn, %{ success: true, users: users })
   end
 
-  def create(conn, %{"user" => user_params}) do
-    case Accounts.create_user(user_params) do
+  def create(conn, %{"user" => user_params, "password" => plain_password}) do
+    hashed_password = Bcrypt.hash_pwd_salt(plain_password)
+    case Accounts.create_user(Map.merge(user_params, %{"hashed_password" => hashed_password})) do
       {:ok, user} ->
-        json(conn, %{ success: true, user: user })
+        json(conn, %{ success: true, user: %{ id: user.id, name: user.name, secret_code: user.secret_code, description: user.description } })
 
       {:error, _} ->
         json(conn, %{ success: false, status: 'Error' })
