@@ -2,13 +2,15 @@ defmodule Lero.MessagingTest do
   use Lero.DataCase
 
   alias Lero.Messaging
+  alias Lero.Accounts
 
   describe "conversations" do
     alias Lero.Messaging.Conversation
+    setup [:create_users]
 
     @valid_attrs %{}
     @update_attrs %{}
-    @invalid_attrs %{}
+    @invalid_attrs %{user_id: 'a', target_id: 'a'}
 
     def conversation_fixture(attrs \\ %{}) do
       {:ok, conversation} =
@@ -20,17 +22,23 @@ defmodule Lero.MessagingTest do
     end
 
     test "list_conversations/0 returns all conversations" do
-      conversation = conversation_fixture()
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ user_id: user1.id, target_id: user2.id })
       assert Messaging.list_conversations() == [conversation]
     end
 
     test "get_conversation!/1 returns the conversation with given id" do
-      conversation = conversation_fixture()
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ user_id: user1.id, target_id: user2.id })
       assert Messaging.get_conversation!(conversation.id) == conversation
     end
 
     test "create_conversation/1 with valid data creates a conversation" do
-      assert {:ok, %Conversation{} = conversation} = Messaging.create_conversation(@valid_attrs)
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      assert {:ok, %Conversation{} = conversation} = Messaging.create_conversation(%{ user_id: user1.id, target_id: user2.id })
     end
 
     test "create_conversation/1 with invalid data returns error changeset" do
@@ -38,30 +46,39 @@ defmodule Lero.MessagingTest do
     end
 
     test "update_conversation/2 with valid data updates the conversation" do
-      conversation = conversation_fixture()
-      assert {:ok, %Conversation{} = conversation} = Messaging.update_conversation(conversation, @update_attrs)
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ user_id: user1.id, target_id: user2.id })
+      assert {:ok, %Conversation{} = conversation} = Messaging.update_conversation(conversation, %{ user_id: user2.id, target_id: user1.id })
     end
 
     test "update_conversation/2 with invalid data returns error changeset" do
-      conversation = conversation_fixture()
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ user_id: user1.id, target_id: user2.id })
       assert {:error, %Ecto.Changeset{}} = Messaging.update_conversation(conversation, @invalid_attrs)
       assert conversation == Messaging.get_conversation!(conversation.id)
     end
 
     test "delete_conversation/1 deletes the conversation" do
-      conversation = conversation_fixture()
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ user_id: user1.id, target_id: user2.id })
       assert {:ok, %Conversation{}} = Messaging.delete_conversation(conversation)
       assert_raise Ecto.NoResultsError, fn -> Messaging.get_conversation!(conversation.id) end
     end
 
     test "change_conversation/1 returns a conversation changeset" do
-      conversation = conversation_fixture()
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ user_id: user1.id, target_id: user2.id })
       assert %Ecto.Changeset{} = Messaging.change_conversation(conversation)
     end
   end
 
   describe "messages" do
     alias Lero.Messaging.Message
+    setup [:create_users]
 
     @valid_attrs %{content: "some content"}
     @update_attrs %{content: "some updated content"}
@@ -117,5 +134,11 @@ defmodule Lero.MessagingTest do
       message = message_fixture()
       assert %Ecto.Changeset{} = Messaging.change_message(message)
     end
+  end
+
+  defp create_users(_) do
+    user1 = Accounts.create_user(%{name: "User 1"})
+    user2 = Accounts.create_user(%{name: "User 2"})
+    :ok
   end
 end

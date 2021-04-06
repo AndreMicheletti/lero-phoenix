@@ -2,14 +2,18 @@ defmodule LeroWeb.ConversationController do
   use LeroWeb, :controller
 
   alias Lero.Messaging
+  alias Lero.Accounts
 
   def index(conn, _params) do
     conversations = Messaging.list_conversations()
     json(conn, %{ success: true, conversations: conversations })
   end
 
-  def create(conn, %{"conversation" => conversation_params}) do
-    case Messaging.create_conversation(conversation_params) do
+  def create(conn, %{"user_name" => user_name, "target_user" => target_user}) do
+    user = Accounts.get_user_by_name(user_name)
+    target = Accounts.get_user_by_name(target_user)
+
+    case Messaging.create_conversation(%{user_id: user.id, target_id: target.id}) do
       {:ok, conversation} ->
         json(conn, %{ success: true, conversation: conversation })
 

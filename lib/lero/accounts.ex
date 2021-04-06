@@ -37,6 +37,10 @@ defmodule Lero.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  def get_user_by_name(user_name) do
+    Repo.one(from us in User, where: us.name == ^user_name)
+  end
+
   @doc """
   Creates a user.
 
