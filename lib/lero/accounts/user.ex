@@ -4,6 +4,10 @@ defmodule Lero.Accounts.User do
 
   schema "users" do
     field :name, :string
+    field :description, :string
+    field :secret_code, :string
+
+    has_many :messages, Lero.Messaging.Message
 
     timestamps()
   end
@@ -11,7 +15,8 @@ defmodule Lero.Accounts.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, [:name, :description, :secret_code])
+    |> validate_required([:name, :description, :secret_code])
+    |> unique_constraint([:secret_code])
   end
 end

@@ -3,8 +3,10 @@ defmodule Lero.Messaging.Conversation do
   import Ecto.Changeset
 
   schema "conversations" do
-    field :target_id, :integer
-    belongs_to :user, Lero.Accounts.User
+    field :title, :string
+    field :participants, {:array, :integer}
+
+    has_many :messages, Lero.Messaging.Message
 
     timestamps()
   end
@@ -12,7 +14,7 @@ defmodule Lero.Messaging.Conversation do
   @doc false
   def changeset(conversation, attrs) do
     conversation
-    |> cast(attrs, [:user_id, :target_id])
-    |> validate_required([:user_id, :target_id])
+    |> cast(attrs, [:title, :participants])
+    |> validate_required([:participants])
   end
 end

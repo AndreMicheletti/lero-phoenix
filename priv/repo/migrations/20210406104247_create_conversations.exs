@@ -4,11 +4,10 @@ defmodule Lero.Repo.Migrations.CreateConversations do
   def change do
     create table(:conversations) do
 
-      add :user_id, references(:users)
-      add :target_id, references(:users)
+      add :title, :string
+      add :participants, {:array, :integer}
 
       timestamps()
     end
-
   end
 end

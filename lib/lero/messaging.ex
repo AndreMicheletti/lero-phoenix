@@ -37,6 +37,11 @@ defmodule Lero.Messaging do
   """
   def get_conversation!(id), do: Repo.get!(Conversation, id)
 
+  def find_conversation(user_id, target_id) do
+    first = Repo.one(from cv in Conversation, where: cv.participants == ^[user_id, target_id])
+    if first, do: first, else: Repo.one(from cv in Conversation, where: cv.participants == ^[target_id, user_id])
+  end
+
   @doc """
   Creates a conversation.
 
@@ -53,6 +58,14 @@ defmodule Lero.Messaging do
     %Conversation{}
     |> Conversation.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def start_conversation(user_id, target_id) do
+    if find_conversation(user_id, target_id) do
+      {:error, "Conversation already exists"}
+    else
+      create_conversation(%{title: nil, participants: [user_id, target_id] })
+    end
   end
 
   @doc """

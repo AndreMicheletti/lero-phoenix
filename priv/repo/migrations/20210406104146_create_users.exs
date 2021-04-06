@@ -4,9 +4,12 @@ defmodule Lero.Repo.Migrations.CreateUsers do
   def change do
     create table(:users) do
       add :name, :string
+      add :description, :string
+      add :secret_code, :string
 
       timestamps()
     end
 
+    create unique_index(:users, [:secret_code])
   end
 end
