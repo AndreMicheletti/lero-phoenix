@@ -1,0 +1,24 @@
+<h1>Listing Conversations</h1>
+
+<table>
+  <thead>
+    <tr>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for conversation <- @conversations do %>
+    <tr>
+
+      <td>
+        <span><%= link "Show", to: Routes.conversation_path(@conn, :show, conversation) %></span>
+        <span><%= link "Edit", to: Routes.conversation_path(@conn, :edit, conversation) %></span>
+        <span><%= link "Delete", to: Routes.conversation_path(@conn, :delete, conversation), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Conversation", to: Routes.conversation_path(@conn, :new) %></span>
