@@ -7,6 +7,7 @@ defmodule Lero.Accounts do
   alias Lero.Repo
 
   alias Lero.Accounts.User
+  alias Lero.Messaging.Conversation
 
   @doc """
   Returns the list of users.
@@ -39,6 +40,10 @@ defmodule Lero.Accounts do
 
   def get_user_by_name(user_name) do
     Repo.one(from us in User, where: us.name == ^user_name)
+  end
+
+  def get_user_conversations(user_id) do
+    Repo.all(from cv in Conversation, where: ^user_id in cv.participants)
   end
 
   @doc """

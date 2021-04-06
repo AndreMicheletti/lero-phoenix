@@ -9,5 +9,7 @@ defmodule Lero.Repo.Migrations.CreateConversations do
 
       timestamps()
     end
+
+    create index(:conversations, [:participants], using: :gin)
   end
 end
