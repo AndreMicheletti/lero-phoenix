@@ -2,39 +2,31 @@ defmodule LeroWeb.ConversationController do
   use LeroWeb, :controller
 
   alias Lero.Messaging
-  alias Lero.Messaging.Conversation
 
   def index(conn, _params) do
     conversations = Messaging.list_conversations()
-    json(conn, %{ conversations: conversations })
-  end
-
-  def new(conn, _params) do
-    changeset = Messaging.change_conversation(%Conversation{})
-    render(conn, "new.html", changeset: changeset)
+    json(conn, %{ success: true, conversations: conversations })
   end
 
   def create(conn, %{"conversation" => conversation_params}) do
     case Messaging.create_conversation(conversation_params) do
       {:ok, conversation} ->
-        conn
-        |> put_flash(:info, "Conversation created successfully.")
-        |> redirect(to: Routes.conversation_path(conn, :show, conversation))
+        json(conn, %{ success: true, conversation: conversation })
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+      {:error, _} ->
+        json(conn, %{ success: true, status: 'Error' })
     end
   end
 
   def show(conn, %{"id" => id}) do
     conversation = Messaging.get_conversation!(id)
-    render(conn, "show.html", conversation: conversation)
+    json(conn, %{ success: true, conversation: conversation })
   end
 
   def edit(conn, %{"id" => id}) do
     conversation = Messaging.get_conversation!(id)
-    changeset = Messaging.change_conversation(conversation)
-    render(conn, "edit.html", conversation: conversation, changeset: changeset)
+    Messaging.change_conversation(conversation)
+    json(conn, %{ success: true, conversation: conversation })
   end
 
   def update(conn, %{"id" => id, "conversation" => conversation_params}) do
@@ -42,12 +34,10 @@ defmodule LeroWeb.ConversationController do
 
     case Messaging.update_conversation(conversation, conversation_params) do
       {:ok, conversation} ->
-        conn
-        |> put_flash(:info, "Conversation updated successfully.")
-        |> redirect(to: Routes.conversation_path(conn, :show, conversation))
+        json(conn, %{ success: true, conversation: conversation })
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", conversation: conversation, changeset: changeset)
+      {:error, _} ->
+        json(conn, %{ success: true, status: 'Error' })
     end
   end
 
@@ -55,8 +45,6 @@ defmodule LeroWeb.ConversationController do
     conversation = Messaging.get_conversation!(id)
     {:ok, _conversation} = Messaging.delete_conversation(conversation)
 
-    conn
-    |> put_flash(:info, "Conversation deleted successfully.")
-    |> redirect(to: Routes.conversation_path(conn, :index))
+    json(conn, %{ success: true, status: 'Deleted' })
   end
 end
