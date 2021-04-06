@@ -55,6 +55,25 @@ defmodule Lero.MessagingTest do
       assert conversation.id == conversation2.id
       assert conversation1.id == conversation2.id
     end
+
+    test "get_conversation_messages/1 returns a empty list" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ title: "Conversation", participants: [user1.id, user2.id] })
+
+      assert Messaging.get_conversation_messages(conversation.id) == []
+    end
+
+    test "get_conversation_messages/1 returns a message list from sender and recipient" do
+      user1 = Accounts.get_user_by_name("User 1")
+      user2 = Accounts.get_user_by_name("User 2")
+      conversation = conversation_fixture(%{ title: "Conversation", participants: [user1.id, user2.id] })
+
+      Messaging.send_message(user1.id, conversation.id, "hello")  # message by sender
+      Messaging.send_message(user2.id, conversation.id, "hello back")  # message by recipient
+
+      assert length(Messaging.get_conversation_messages(conversation.id)) == 2
+    end
   end
 
   describe "messages" do

@@ -7,6 +7,7 @@ defmodule Lero.Messaging do
   alias Lero.Repo
 
   alias Lero.Messaging.Conversation
+  alias Lero.Messaging.Message
 
   @doc """
   Returns the list of conversations.
@@ -50,6 +51,10 @@ defmodule Lero.Messaging do
       {:ok, %Conversation{} = conversation} = start_conversation(user_id, target_id)
       conversation
     end
+  end
+
+  def get_conversation_messages(conversation_id) do
+    Repo.all(from ms in Message, where: ms.conversation_id == ^conversation_id)
   end
 
   @doc """
@@ -124,8 +129,6 @@ defmodule Lero.Messaging do
   def change_conversation(%Conversation{} = conversation, attrs \\ %{}) do
     Conversation.changeset(conversation, attrs)
   end
-
-  alias Lero.Messaging.Message
 
   @doc """
   Returns the list of messages.
