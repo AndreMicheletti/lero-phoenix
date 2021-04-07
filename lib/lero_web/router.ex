@@ -28,7 +28,7 @@ defmodule LeroWeb.Router do
     post("/user", UserController, :update)
 
     scope "/conversations" do
-      get("/conversations", ConversationController, :index)
+      get("/", ConversationController, :index)
     end
 
     resources "/message", MessageController
