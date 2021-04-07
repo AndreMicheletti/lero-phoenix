@@ -24,14 +24,17 @@ defmodule LeroWeb.Router do
   scope "/api", LeroWeb do
     pipe_through [:api, :maybe_browser_auth, :authenticated]
 
+    # User
     get("/user", UserController, :show)
     post("/user", UserController, :update)
+    delete("/user", UserController, :delete)
 
+    # Conversations
     scope "/conversations" do
       get("/", ConversationController, :index)
     end
 
-    resources "/message", MessageController
+    # resources "/message", MessageController
     # resources "/conversation", ConversationController
   end
 

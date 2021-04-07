@@ -15,7 +15,7 @@ defmodule LeroWeb.UserControllerTest do
         conn
         |> put_req_header("accept", "application/json")
         |> put_req_header("authorization", "Bearer #{jwt}")
-  
+
       {:ok, conn: conn}
     end
 
@@ -53,7 +53,13 @@ defmodule LeroWeb.UserControllerTest do
       assert json_user["name"] == "some updated name"
       assert json_user["description"] == "some updated description"
       assert json_user["secret_code"] == "mycode"  # should remain the same code
-    end 
+    end
+
+    test "delete own user", %{conn: conn} do
+      conn = delete(conn, Routes.user_path(conn, :delete))
+      assert %{ "success" => true, "status" => "Deleted" } = json_response(conn, 200)
+      assert is_nil(Accounts.get_user_by_name("Dummy User"))
+    end
   end
 
   describe "register user" do

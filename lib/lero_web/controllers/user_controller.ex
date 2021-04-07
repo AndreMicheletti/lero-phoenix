@@ -9,8 +9,8 @@ defmodule LeroWeb.UserController do
       {:ok, user} ->
         {:ok, jwt, _claims} = Guardian.encode_and_sign(user, :access)
         json(conn, %{ success: true, token: jwt })
-  
-      {:error, reason} -> json(conn, %{ success: false, status: "invalid credentials" })
+
+      {:error, _} -> json(conn, %{ success: false, status: "invalid credentials" })
     end
   end
 
@@ -20,7 +20,7 @@ defmodule LeroWeb.UserController do
         json(conn, %{ success: true, user: serialize_user(user) })
 
       {:error, _} ->
-        json(conn, %{ success: false, status: 'Error' })
+        json(conn, %{ success: false, status: "Error" })
     end
   end
 
@@ -41,14 +41,26 @@ defmodule LeroWeb.UserController do
           json(conn, %{ success: true, user: serialize_user(user) })
 
         {:error, _} ->
-          json(conn, %{ success: false, status: 'Error' })
+          json(conn, %{ success: false, status: "Error" })
       end
     else
       json(conn, %{ success: false, status: "unauthorized" })
     end
   end
 
-  def delete(conn, %{"id" => id}, _user, _claims) do
+  def delete(conn, _params) do
+    if Guardian.Plug.authenticated?(conn) do
+      user = Guardian.Plug.current_resource(conn)
+      case Accounts.delete_user(user) do
+        {:ok, _} ->
+          json(conn, %{ success: true, status: "Deleted" })
+
+        {:error, _} ->
+          json(conn, %{ success: false, status: "Error" })
+      end
+    else
+      json(conn, %{ success: false, status: "unauthorized" })
+    end
   end
 
   def serialize_user(user) do
