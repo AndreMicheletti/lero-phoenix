@@ -3,49 +3,55 @@ defmodule LeroWeb.UserController do
 
   alias Lero.Accounts
 
-  def index(conn, _params) do
-    users = Accounts.list_users()
-    json(conn, %{ success: true, users: users })
+
+  def login(conn, %{"secret_code" => secret_code, "password" => plain_password}) do
+    case Accounts.authenticate_user(secret_code, plain_password) do
+      {:ok, user} ->
+        {:ok, jwt, _claims} = Guardian.encode_and_sign(user, :access)
+        json(conn, %{ success: true, token: jwt })
+  
+      {:error, reason} -> json(conn, %{ success: false, status: "invalid credentials" })
+    end
   end
 
-  def create(conn, %{"user" => user_params, "password" => plain_password}) do
-    hashed_password = Bcrypt.hash_pwd_salt(plain_password)
-    case Accounts.create_user(Map.merge(user_params, %{"hashed_password" => hashed_password})) do
+  def register(conn, %{"user" => user_params, "password" => plain_password}) do
+    case Accounts.create_user(Map.merge(user_params, %{"password" => plain_password})) do
       {:ok, user} ->
-        json(conn, %{ success: true, user: %{ id: user.id, name: user.name, secret_code: user.secret_code, description: user.description } })
+        json(conn, %{ success: true, user: serialize_user(user) })
 
       {:error, _} ->
         json(conn, %{ success: false, status: 'Error' })
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
-    json(conn, %{ success: true, user: user })
-  end
-
-  def edit(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
-    Accounts.change_user(user)
-    json(conn, %{ success: true, user: user })
-  end
-
-  def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Accounts.get_user!(id)
-
-    case Accounts.update_user(user, user_params) do
-      {:ok, user} ->
-        json(conn, %{ success: true, user: user })
-
-      {:error, _} ->
-        json(conn, %{ success: false, status: 'Error' })
+  def show(conn, _params) do
+    if Guardian.Plug.authenticated?(conn) do
+      user = Guardian.Plug.current_resource(conn)
+      json(conn, %{ success: true, user: serialize_user(user) })
+    else
+      json(conn, %{ success: false, status: "unauthorized" })
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
-    {:ok, _user} = Accounts.delete_user(user)
+  def update(conn, %{"user" => user_params}) do
+    if Guardian.Plug.authenticated?(conn) do
+      user = Guardian.Plug.current_resource(conn)
+      case Accounts.update_user(user, user_params) do
+        {:ok, user} ->
+          json(conn, %{ success: true, user: serialize_user(user) })
 
-    json(conn, %{ success: true, status: 'Deleted' })
+        {:error, _} ->
+          json(conn, %{ success: false, status: 'Error' })
+      end
+    else
+      json(conn, %{ success: false, status: "unauthorized" })
+    end
+  end
+
+  def delete(conn, %{"id" => id}, _user, _claims) do
+  end
+
+  def serialize_user(user) do
+    %{ id: user.id, name: user.name, secret_code: user.secret_code, description: user.description }
   end
 end

@@ -128,8 +128,8 @@ defmodule Lero.MessagingTest do
   end
 
   defp create_users(_) do
-    Accounts.create_user(%{name: "User 1", description: "hello world", secret_code: "mycode", hashed_password: "123"})
-    Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo", hashed_password: "123"})
+    Accounts.create_user(%{name: "User 1", description: "hello world", secret_code: "mycode", password: "123"})
+    Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo", password: "123"})
     :ok
   end
 end

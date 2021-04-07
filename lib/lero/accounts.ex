@@ -38,12 +38,39 @@ defmodule Lero.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
+  def authenticate_user(secret_code, plain_password) do
+    user = get_user_by_secret_code(secret_code)
+    if Bcrypt.verify_pass(plain_password, user.hashed_password) do
+      {:ok, user}
+    else
+      {:error, "password doesn't match"}
+    end
+  end
+
   def get_user_by_name(user_name) do
     Repo.one(from us in User, where: us.name == ^user_name)
   end
 
+  def get_user_by_secret_code(secret_code) do
+    Repo.one(from us in User, where: us.secret_code == ^secret_code)
+  end
+
   def get_user_conversations(user_id) do
     Repo.all(from cv in Conversation, where: ^user_id in cv.participants)
+  end
+
+  def hash_password_attr(attrs) do
+    if Map.has_key?(attrs, :password) do
+      hashed_password = Bcrypt.hash_pwd_salt(attrs.password)
+      Map.merge(attrs, %{hashed_password: hashed_password})
+    else
+      if Map.has_key?(attrs, "password") do
+        hashed_password = Bcrypt.hash_pwd_salt(attrs["password"])
+        Map.merge(attrs, %{"hashed_password" => hashed_password})
+      else
+        attrs
+      end
+    end
   end
 
   @doc """
@@ -59,8 +86,9 @@ defmodule Lero.Accounts do
 
   """
   def create_user(attrs \\ %{}) do
+    merged_map = hash_password_attr(attrs)
     %User{}
-    |> User.changeset(attrs)
+    |> User.changeset(merged_map)
     |> Repo.insert()
   end
 
@@ -77,9 +105,14 @@ defmodule Lero.Accounts do
 
   """
   def update_user(%User{} = user, attrs) do
+    filtered_attrs = 
+      attrs
+      |> hash_password_attr()
+      |> Map.delete(:secret_code)
+      |> Map.delete("secret_code")
     user
-    |> User.changeset(attrs)
-    |> Repo.update()
+      |> User.changeset(filtered_attrs)
+      |> Repo.update()
   end
 
   @doc """

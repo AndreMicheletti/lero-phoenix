@@ -7,7 +7,7 @@ defmodule Lero.AccountsTest do
   describe "users" do
     alias Lero.Accounts.User
 
-    @valid_attrs %{name: "some name", description: "some description", secret_code: "123", hashed_password: "123"}
+    @valid_attrs %{name: "some name", description: "some description", secret_code: "123", password: "123"}
 
     def user_fixture(attrs \\ %{}) do
       {:ok, user} =
@@ -30,7 +30,7 @@ defmodule Lero.AccountsTest do
 
     test "create_user/1 with duplicate secret_code doesn't create a user" do
       user_fixture(@valid_attrs)
-      assert {:error, %Ecto.Changeset{}} = Accounts.create_user(%{name: "other name", description: "other description", secret_code: "123"})
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_user(%{name: "other name", description: "other description", secret_code: "123", password: "123"})
     end
 
     test "get_user_conversations/1 returns a empty list of conversations" do

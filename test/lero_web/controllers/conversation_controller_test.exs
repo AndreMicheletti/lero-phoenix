@@ -13,10 +13,6 @@ defmodule LeroWeb.ConversationControllerTest do
   end
 
   describe "index" do
-    test "lists all conversations", %{conn: conn} do
-      conn = get(conn, Routes.conversation_path(conn, :index))
-      assert json_response(conn, 200) == %{ "success" => true, "conversations" => [] }
-    end
   end
 
   describe "create conversation" do

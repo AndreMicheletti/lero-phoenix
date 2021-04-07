@@ -13,10 +13,6 @@ defmodule LeroWeb.MessageControllerTest do
   end
 
   describe "index" do
-    test "lists all messages", %{conn: conn} do
-      conn = get(conn, Routes.message_path(conn, :index))
-      assert json_response(conn, 200) == %{ "success" => true, "messages" => [] }
-    end
   end
 
   describe "create message" do

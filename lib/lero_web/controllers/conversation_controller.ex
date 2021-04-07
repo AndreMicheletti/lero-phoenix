@@ -1,15 +1,16 @@
 defmodule LeroWeb.ConversationController do
   use LeroWeb, :controller
+  use Guardian.Phoenix.Controller
 
   alias Lero.Messaging
   alias Lero.Accounts
 
-  def index(conn, _params) do
+  def index(conn, _params, _user, _claims) do
     conversations = Messaging.list_conversations()
     json(conn, %{ success: true, conversations: conversations })
   end
 
-  def create(conn, %{"user_name" => user_name, "target_user" => target_user}) do
+  def create(conn, %{"user_name" => user_name, "target_user" => target_user}, _user, _claims) do
     user = Accounts.get_user_by_name(user_name)
     target = Accounts.get_user_by_name(target_user)
 
@@ -22,18 +23,18 @@ defmodule LeroWeb.ConversationController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
+  def show(conn, %{"id" => id}, _user, _claims) do
     conversation = Messaging.get_conversation!(id)
     json(conn, %{ success: true, conversation: conversation })
   end
 
-  def edit(conn, %{"id" => id}) do
+  def edit(conn, %{"id" => id}, _user, _claims) do
     conversation = Messaging.get_conversation!(id)
     Messaging.change_conversation(conversation)
     json(conn, %{ success: true, conversation: conversation })
   end
 
-  def update(conn, %{"id" => id, "conversation" => conversation_params}) do
+  def update(conn, %{"id" => id, "conversation" => conversation_params}, _user, _claims) do
     conversation = Messaging.get_conversation!(id)
 
     case Messaging.update_conversation(conversation, conversation_params) do
@@ -45,7 +46,7 @@ defmodule LeroWeb.ConversationController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
+  def delete(conn, %{"id" => id}, _user, _claims) do
     conversation = Messaging.get_conversation!(id)
     {:ok, _conversation} = Messaging.delete_conversation(conversation)
 

@@ -20,6 +20,7 @@ defmodule Lero.MixProject do
   def application do
     [
       mod: {Lero.Application, []},
+      applications: [:guardian],
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -43,7 +44,8 @@ defmodule Lero.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:bcrypt_elixir, "~> 2.3.0"}
+      {:bcrypt_elixir, "~> 2.3.0"},
+      {:guardian, "~> 0.14"}
     ]
   end
 

@@ -5,9 +5,27 @@ defmodule LeroWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :maybe_browser_auth do
+    plug(Guardian.Plug.VerifyHeader, realm: "Bearer")
+    plug(Guardian.Plug.LoadResource)
+  end
+
+  pipeline :authenticated do
+    plug(Guardian.Plug.EnsureAuthenticated, %{"typ" => "access", handler: Lero.HttpErrorHandler})
+  end
+
   scope "/api", LeroWeb do
-    pipe_through :api
-    resources "/user", UserController
+    pipe_through [:api, :maybe_browser_auth]
+
+    post("/login", UserController, :login)
+    post("/register", UserController, :register)
+  end
+
+  scope "/api", LeroWeb do
+    pipe_through [:api, :maybe_browser_auth, :authenticated]
+
+    get("/user", UserController, :show)
+    post("/user", UserController, :update)
     resources "/message", MessageController
     resources "/conversation", ConversationController
   end

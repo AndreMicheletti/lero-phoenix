@@ -29,3 +29,9 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
+
+config :guardian, Guardian,
+  issuer: "LeroApp",
+  ttl: { 30, :days },
+  secret_key: "v8ecmuI1BFSXjmba5kMAtw1AJF/PGLvXziS5e0plVb1ii9DDXuuAIdIhvOuEN7vD",
+  serializer: Lero.GuardianSerializer
