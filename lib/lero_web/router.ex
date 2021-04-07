@@ -35,6 +35,11 @@ defmodule LeroWeb.Router do
       get("/:id/messages", ConversationController, :details)
     end
 
+    # Messages
+    scope "/message" do
+      post("/", MessageController, :send)
+    end
+
     # resources "/message", MessageController
     # resources "/conversation", ConversationController
   end

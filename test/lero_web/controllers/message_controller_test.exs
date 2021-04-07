@@ -98,6 +98,28 @@ defmodule LeroWeb.MessageControllerTest do
       assert length(messages) == 8
       assert page == 1
     end
+
+    test "send message to existing secret_code should create conversation", %{conn: conn} do
+      user = Accounts.get_user_by_name("Dummy User")
+      target = Accounts.get_user_by_name("User 2")
+
+      assert is_nil(Messaging.find_conversation(user.id, target.id))
+
+      body_params = %{"content" => "hello", "secret_code" => target.secret_code }
+      conn = post(conn, Routes.message_path(conn, :send, body_params))
+      assert %{ "success" => true, "status" => _ } = json_response(conn, 200)
+
+      conversation = Messaging.find_conversation(user.id, target.id)
+      assert conversation != nil
+    end
+
+    test "send message to unexisting user should fail", %{conn: conn} do
+      user = Accounts.get_user_by_name("Dummy User")
+
+      body_params = %{"content" => "hello", "secret_code" => "dontexist" }
+      conn = post(conn, Routes.message_path(conn, :send, body_params))
+      assert %{ "success" => false, "status" => _ } = json_response(conn, 200)
+    end
   end
 
   describe "unauthorized" do

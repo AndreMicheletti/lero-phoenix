@@ -81,7 +81,7 @@ defmodule LeroWeb.UserControllerTest do
       assert %{ "success" => false, "status" => _ } = json_response(conn, 200)
     end
 
-    test "with duplicated data", %{conn: conn} do
+    test "with duplicated secret_code", %{conn: conn} do
       {:ok, user} = Accounts.create_user(@create_attrs)
       params = %{name: "My User", description: "", secret_code: user.secret_code}
       conn = post(conn, Routes.user_path(conn, :register, %{ user: params, password: "123" }))

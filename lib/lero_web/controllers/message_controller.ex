@@ -2,49 +2,18 @@ defmodule LeroWeb.MessageController do
   use LeroWeb, :controller
   use Guardian.Phoenix.Controller
 
+  alias Lero.Accounts
   alias Lero.Messaging
 
-  def index(conn, _params, _user, _claims) do
-    messages = Messaging.list_messages()
-    json(conn, %{ success: true, messages: messages })
-  end
+  def send(conn, %{"content" => content, "secret_code" => secret_code}, user, _claims) do
 
-  def create(conn, %{"message" => message_params}, _user, _claims) do
-    case Messaging.create_message(message_params) do
-      {:ok, message} ->
-        json(conn, %{ success: true, message: message })
+    target = Accounts.get_user_by_secret_code(secret_code)
 
-      {:error, _} ->
-        json(conn, %{ success: true, status: 'Error' })
+    if is_nil(target) do
+      json(conn, %{ success: false, status: "target not found" })
+    else
+      Messaging.send_message_to(user.id, target.id, content)
+      json(conn, %{ success: true, status: "message sent" })
     end
-  end
-
-  def show(conn, %{"id" => id}, _user, _claims) do
-    message = Messaging.get_message!(id)
-    json(conn, %{ success: true, message: message })
-  end
-
-  def edit(conn, %{"id" => id}, _user, _claims) do
-    message = Messaging.get_message!(id)
-    Messaging.change_message(message)
-    json(conn, %{ success: true, message: message })
-  end
-
-  def update(conn, %{"id" => id, "message" => message_params}, _user, _claims) do
-    message = Messaging.get_message!(id)
-
-    case Messaging.update_message(message, message_params) do
-      {:ok, message} ->
-        json(conn, %{ success: true, message: message })
-
-      {:error, _} ->
-        json(conn, %{ success: true, status: 'Error' })
-    end
-  end
-
-  def delete(conn, %{"id" => id}, _user, _claims) do
-    message = Messaging.get_message!(id)
-    {:ok, _message} = Messaging.delete_message(message)
-    json(conn, %{ success: true, status: 'Deleted' })
   end
 end
