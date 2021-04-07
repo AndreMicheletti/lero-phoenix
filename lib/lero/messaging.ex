@@ -9,6 +9,7 @@ defmodule Lero.Messaging do
   alias Lero.Messaging.Conversation
   alias Lero.Messaging.Message
   alias Lero.Accounts
+  alias Lero.Utils
 
   @doc """
   Returns the list of conversations.
@@ -55,7 +56,16 @@ defmodule Lero.Messaging do
   end
 
   def get_conversation_messages(conversation_id) do
-    Repo.all(from ms in Message, where: ms.conversation_id == ^conversation_id)
+    Repo.all(from ms in Message, where: ms.conversation_id == ^conversation_id, order_by: [desc: :inserted_at])
+  end
+
+  def get_paginated_conversation_messages(conversation_id, page, offset) do
+    get_conversation_messages(conversation_id)
+    |> Utils.paginate(page, offset)
+  end
+
+  def get_conversation_messages_count(conversation_id) do
+    Repo.one(from ms in Message, where: ms.conversation_id == ^conversation_id, select: count(ms.id))
   end
 
   def get_conversation_title_based_on_user(conversation, user_id) do
