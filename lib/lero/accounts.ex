@@ -38,8 +38,6 @@ defmodule Lero.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
-  def get_user(id), do: Repo.get(User, id)
-
   def authenticate_user(secret_code, plain_password) do
     user = get_user_by_secret_code(secret_code)
     if Bcrypt.verify_pass(plain_password, user.hashed_password) do
