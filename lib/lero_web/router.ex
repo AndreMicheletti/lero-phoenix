@@ -26,8 +26,13 @@ defmodule LeroWeb.Router do
 
     get("/user", UserController, :show)
     post("/user", UserController, :update)
+
+    scope "/conversations" do
+      get("/conversations", ConversationController, :index)
+    end
+
     resources "/message", MessageController
-    resources "/conversation", ConversationController
+    # resources "/conversation", ConversationController
   end
 
   # Enables LiveDashboard only for development

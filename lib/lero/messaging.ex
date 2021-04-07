@@ -8,6 +8,7 @@ defmodule Lero.Messaging do
 
   alias Lero.Messaging.Conversation
   alias Lero.Messaging.Message
+  alias Lero.Accounts
 
   @doc """
   Returns the list of conversations.
@@ -55,6 +56,15 @@ defmodule Lero.Messaging do
 
   def get_conversation_messages(conversation_id) do
     Repo.all(from ms in Message, where: ms.conversation_id == ^conversation_id)
+  end
+
+  def get_conversation_title_based_on_user(conversation, user_id) do
+    participants = Enum.reject(conversation.participants, fn x -> x == user_id end)
+    if length(participants) == 1 do
+      Accounts.get_user!(Enum.at(participants, 0)).name
+    else
+      conversation.title
+    end
   end
 
   @doc """
