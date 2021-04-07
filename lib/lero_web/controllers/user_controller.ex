@@ -53,6 +53,8 @@ defmodule LeroWeb.UserController do
       user = Guardian.Plug.current_resource(conn)
       case Accounts.delete_user(user) do
         {:ok, _} ->
+          jwt = Guardian.Plug.current_token(conn)
+          Guardian.revoke!(jwt)
           json(conn, %{ success: true, status: "Deleted" })
 
         {:error, _} ->

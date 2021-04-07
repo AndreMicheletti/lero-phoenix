@@ -88,13 +88,4 @@ defmodule LeroWeb.UserControllerTest do
       assert %{ "success" => false, "status" => _ } = json_response(conn, 200)
     end
   end
-
-  describe "edit user" do
-  end
-
-  describe "update user" do
-  end
-
-  describe "delete user" do
-  end
 end
