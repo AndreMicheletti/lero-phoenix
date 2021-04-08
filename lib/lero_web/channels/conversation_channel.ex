@@ -1,7 +1,6 @@
 defmodule LeroWeb.ConversationChannel do
   use LeroWeb, :channel
 
-  alias Lero.Accounts
   alias Lero.Messaging
 
   @impl true

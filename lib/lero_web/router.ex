@@ -2,6 +2,7 @@ defmodule LeroWeb.Router do
   use LeroWeb, :router
 
   pipeline :api do
+    plug CORSPlug, origin: "*"
     plug :accepts, ["json"]
   end
 

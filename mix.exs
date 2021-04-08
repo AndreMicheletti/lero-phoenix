@@ -44,7 +44,8 @@ defmodule Lero.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:bcrypt_elixir, "~> 2.3.0"},
-      {:guardian, "~> 0.14"}
+      {:guardian, "~> 0.14"},
+      {:cors_plug, "~> 1.5"},
     ]
   end
 

@@ -35,3 +35,6 @@ config :guardian, Guardian,
   ttl: { 30, :days },
   secret_key: "v8ecmuI1BFSXjmba5kMAtw1AJF/PGLvXziS5e0plVb1ii9DDXuuAIdIhvOuEN7vD",
   serializer: Lero.GuardianSerializer
+
+config :cors_plug,
+  send_preflight_response?: true
