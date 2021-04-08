@@ -4,7 +4,7 @@ defmodule LeroWeb.ConversationChannelTest do
   alias Lero.Accounts
   alias Lero.Messaging
 
-  describe "authorized user" do
+  describe "channel conversation:id" do
     setup do
       {:ok, user2} = Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo", password: "123"})
       {:ok, user3} = Accounts.create_user(%{name: "User 3", description: "hello world", secret_code: "yoo3", password: "123"})
@@ -22,19 +22,19 @@ defmodule LeroWeb.ConversationChannelTest do
       %{socket: socket}
     end
 
-    test "ping replies with status ok", %{socket: socket} do
-      ref = push socket, "ping", %{"hello" => "there"}
-      assert_reply ref, :ok, %{"hello" => "there"}
-    end
+    test "send_message replies with status ok and broadcasts 'new_message'", %{socket: socket} do
+      ref = push socket, "send_message", %{"content" => "hello"}
+      assert_reply ref, :ok, %{message_id: message_id}
+      assert message_id
 
-    test "shout broadcasts to conversation:lobby", %{socket: socket} do
-      push socket, "shout", %{"hello" => "all"}
-      assert_broadcast "shout", %{"hello" => "all"}
-    end
+      message = Messaging.get_message!(message_id)
+      assert message.user_id == socket.assigns.current_user.id
 
-    test "broadcasts are pushed to the client", %{socket: socket} do
-      broadcast_from! socket, "broadcast", %{"some" => "data"}
-      assert_push "broadcast", %{"some" => "data"}
+      assert_broadcast "new_message", %{message: serialized_message}
+      assert serialized_message.id == message.id
+      assert serialized_message.conversation_id == message.conversation_id
+      assert serialized_message.user_id == message.user_id
+      assert Map.has_key?(serialized_message, :time)
     end
   end
 end
