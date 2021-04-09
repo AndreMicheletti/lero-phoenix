@@ -20,10 +20,11 @@ defmodule LeroWeb.ConversationController do
   end
 
   def serialize_conversation(conversation, user_id) do
+    messages = Messaging.get_paginated_conversation_messages(conversation.id, 0, 20) |> Enum.map(fn x -> serialize_message(x, user_id) end)
     if conversation.title do
-      %{title: conversation.title }
+      %{id: conversation.id, messages: messages, title: conversation.title }
     else
-      %{title: Messaging.get_conversation_title_based_on_user(conversation, user_id) }
+      %{id: conversation.id, messages: messages, title: Messaging.get_conversation_title_based_on_user(conversation, user_id) }
     end
   end
 

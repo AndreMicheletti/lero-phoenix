@@ -12,8 +12,12 @@ defmodule LeroWeb.MessageController do
     if is_nil(target) do
       json(conn, %{ success: false, status: "target not found" })
     else
-      {:ok, message} = Messaging.send_message_to(user.id, target.id, content)
-      json(conn, %{ success: true, message: serialize_message(message) })
+      if target.id != user.id do
+        {:ok, message} = Messaging.send_message_to(user.id, target.id, content)
+        json(conn, %{ success: true, message: serialize_message(message) })
+      else
+        json(conn, %{ success: false, status: "cannot send message to yourself" })
+      end
     end
   end
 
