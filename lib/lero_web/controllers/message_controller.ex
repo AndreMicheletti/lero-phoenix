@@ -22,6 +22,6 @@ defmodule LeroWeb.MessageController do
   end
 
   def serialize_message(message) do
-    %{ id: message.id, content: message.content, conversation_id: message.conversation_id, time: message.inserted_at }
+    %{ id: message.id, content: message.content, conversationId: message.conversation_id, time: message.inserted_at }
   end
 end

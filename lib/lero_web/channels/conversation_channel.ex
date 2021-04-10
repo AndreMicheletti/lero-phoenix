@@ -1,6 +1,7 @@
 defmodule LeroWeb.ConversationChannel do
   use LeroWeb, :channel
 
+  alias Lero.Accounts
   alias Lero.Messaging
 
   @impl true
@@ -29,14 +30,29 @@ defmodule LeroWeb.ConversationChannel do
   end
 
   def serialize_message(message) do
-    %{ id: message.id, user_id: message.user_id, content: message.content, conversation_id: message.conversation_id, time: message.inserted_at }
+    %{
+      id: message.id,
+      user_id: message.user_id,
+      content: message.content,
+      conversation_id: message.conversation_id,
+      time: message.inserted_at
+    }
   end
 
   def serialize_conversation(conversation, user_id) do
-    if conversation.title do
-      %{title: conversation.title }
-    else
-      %{title: Messaging.get_conversation_title_based_on_user(conversation, user_id) }
-    end
+    title = if conversation.title, do: conversation.title, else: Messaging.get_conversation_title_based_on_user(conversation, user_id)
+    %{
+      id: conversation.id,
+      title: title,
+      participants:
+        conversation.participants
+          |> Enum.reject(fn x -> x == user_id end)
+          |> Enum.map(fn x -> serialize_user(x) end)
+    }
+  end
+
+  def serialize_user(user_id) do
+    user = Accounts.get_user!(user_id)
+    %{ id: user.id, name: user.name, secretCode: user.secret_code }
   end
 end

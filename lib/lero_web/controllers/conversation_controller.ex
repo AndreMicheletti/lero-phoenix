@@ -13,18 +13,21 @@ defmodule LeroWeb.ConversationController do
   end
 
   def details(conn, %{"id" => id}, user, _claims) do
+    conversation = Messaging.get_conversation!(id)
     messages = Messaging.get_conversation_messages(id) |> Enum.map(fn x -> serialize_message(x, user.id) end)
-    total = Messaging.get_conversation_messages_count(id)
-    json(conn, %{ success: true, messages: messages, total: total })
+    json(conn, %{ success: true, conversation: serialize_conversation(conversation, user.id), messages: messages })
   end
 
   def serialize_conversation(conversation, user_id) do
-    messages = Messaging.get_conversation_messages(conversation.id) |> Enum.map(fn x -> serialize_message(x, user_id) end)
-    if conversation.title do
-      %{id: conversation.id, messages: messages, title: conversation.title }
-    else
-      %{id: conversation.id, messages: messages, title: Messaging.get_conversation_title_based_on_user(conversation, user_id) }
-    end
+    title = if conversation.title, do: conversation.title, else: Messaging.get_conversation_title_based_on_user(conversation, user_id)
+    %{
+      id: conversation.id,
+      title: title,
+      participants:
+        conversation.participants
+          |> Enum.reject(fn x -> x == user_id end)
+          |> Enum.map(fn x -> serialize_user(x) end)
+    }
   end
 
   def serialize_message(message, user_id) do
@@ -34,5 +37,10 @@ defmodule LeroWeb.ConversationController do
       direction: (if message.user_id == user_id, do: "out", else: "in"),
       time: message.inserted_at
     }
+  end
+
+  def serialize_user(user_id) do
+    user = Accounts.get_user!(user_id)
+    %{ id: user.id, name: user.name, secretCode: user.secret_code }
   end
 end

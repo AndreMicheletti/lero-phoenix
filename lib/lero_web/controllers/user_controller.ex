@@ -66,6 +66,6 @@ defmodule LeroWeb.UserController do
   end
 
   def serialize_user(user) do
-    %{ id: user.id, name: user.name, secret_code: user.secret_code, description: user.description }
+    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description }
   end
 end
