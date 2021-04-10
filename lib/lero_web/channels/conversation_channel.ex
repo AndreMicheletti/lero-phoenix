@@ -5,19 +5,14 @@ defmodule LeroWeb.ConversationChannel do
 
   @impl true
   def join("conversation:" <> conversation_id, _params, %Phoenix.Socket{assigns: assigns} = socket) do
-    # if authorized?(payload) do
-    #   {:ok, socket}
-    # else
-    #   {:error, %{reason: "unauthorized"}}
-    # end
     case assigns do
        %{ current_user: current_user } ->
-        conversation = Messaging.get_conversation!(conversation_id)
-        socket = assign(socket, :conversation, conversation)
-        response  = %{ success: true, conversation: serialize_conversation(conversation, current_user.id)}
-        {:ok, response, socket}
-      _ ->
-        {:error, %{ success: false }, socket}
+          conversation = Messaging.get_conversation!(conversation_id)
+          socket = assign(socket, :conversation, conversation)
+          response  = %{ success: true, conversation: serialize_conversation(conversation, current_user.id)}
+          {:ok, response, socket}
+        _ ->
+          {:error, %{ success: false }, socket}
     end
   end
 
