@@ -56,7 +56,7 @@ defmodule LeroWeb.MessageControllerTest do
       conversation = conversation_with_messages_fixture(2, 4)
       conn = get(conn, Routes.conversation_path(conn, :details, conversation.id))
 
-      assert %{ "success" => true, "messages" => messages, "total" => total } = json_response(conn, 200)
+      assert %{ "success" => true, "conversation" => conversation, "messages" => messages } = json_response(conn, 200)
       assert length(messages) == 6
       assert (Enum.slice(messages, 0, 2) |> Enum.all?(fn x -> x["direction"] == "out" end)) == true
       assert (Enum.slice(messages, 2, 4) |> Enum.all?(fn x -> x["direction"] == "in" end)) == true
@@ -66,7 +66,7 @@ defmodule LeroWeb.MessageControllerTest do
       conversation = conversation_with_messages_fixture(2, 4)
       conn = get(conn, Routes.conversation_path(conn, :details, conversation.id))
 
-      assert %{ "success" => true, "messages" => messages, "total" => total } = json_response(conn, 200)
+      assert %{ "success" => true, "conversation" => conversation, "messages" => messages } = json_response(conn, 200)
       assert length(messages) == 6
       assert Enum.all?(messages, fn x -> Map.has_key?(x, "time") end) == true
     end
@@ -75,7 +75,7 @@ defmodule LeroWeb.MessageControllerTest do
       conversation = conversation_with_messages_fixture(2, 4)
       conn = get(conn, Routes.conversation_path(conn, :details, conversation.id))
 
-      assert %{ "success" => true, "messages" => messages, "total" => total } = json_response(conn, 200)
+      assert %{ "success" => true, "conversation" => conversation, "messages" => messages } = json_response(conn, 200)
       assert length(messages) == 6
       assert Enum.at(messages, 0)["id"] < Enum.at(messages, 5)["id"]
     end
@@ -92,7 +92,7 @@ defmodule LeroWeb.MessageControllerTest do
 
       conversation = Messaging.find_conversation(user.id, target.id)
       assert conversation != nil
-      assert message["conversation_id"] == conversation.id
+      assert message["conversationId"] == conversation.id
     end
 
     test "send message to unexisting user should fail", %{conn: conn} do

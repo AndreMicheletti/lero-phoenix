@@ -23,7 +23,7 @@ defmodule LeroWeb.UserControllerTest do
       conn = get(conn, Routes.user_path(conn, :show))
       assert %{ "success" => true, "user" => json_user } = json_response(conn, 200)
       assert json_user["name"] == "Dummy User"
-      assert json_user["secret_code"] == "mycode"
+      assert json_user["secretCode"] == "mycode"
     end
 
     test "edit own user", %{conn: conn} do
@@ -32,7 +32,7 @@ defmodule LeroWeb.UserControllerTest do
       assert %{ "success" => true, "user" => json_user } = json_response(conn, 200)
       assert json_user["name"] == "some updated name"
       assert json_user["description"] == "some updated description"
-      assert json_user["secret_code"] == "mycode"
+      assert json_user["secretCode"] == "mycode"
     end
 
     test "edit own password", %{conn: conn} do
@@ -42,7 +42,7 @@ defmodule LeroWeb.UserControllerTest do
       assert %{ "success" => true, "user" => json_user } = json_response(conn, 200)
       assert json_user["name"] == "some updated name"
       assert json_user["description"] == "some updated description"
-      assert json_user["secret_code"] == "mycode"
+      assert json_user["secretCode"] == "mycode"
       assert Accounts.get_user_by_secret_code("mycode").hashed_password != old_password
     end
 
@@ -52,7 +52,7 @@ defmodule LeroWeb.UserControllerTest do
       assert %{ "success" => true, "user" => json_user } = json_response(conn, 200)
       assert json_user["name"] == "some updated name"
       assert json_user["description"] == "some updated description"
-      assert json_user["secret_code"] == "mycode"  # should remain the same code
+      assert json_user["secretCode"] == "mycode"  # should remain the same code
     end
 
     test "delete own user", %{conn: conn} do
