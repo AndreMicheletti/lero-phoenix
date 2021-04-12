@@ -14,14 +14,10 @@ defmodule LeroWeb.MessageController do
     else
       if target.id != user.id do
         {:ok, message} = Messaging.send_message_to(user.id, target.id, content)
-        json(conn, %{ success: true, message: serialize_message(message) })
+        json(conn, %{ success: true, message: Messaging.serialize_message(message, user.id) })
       else
         json(conn, %{ success: false, status: "cannot send message to yourself" })
       end
     end
-  end
-
-  def serialize_message(message) do
-    %{ id: message.id, content: message.content, conversationId: message.conversation_id, time: message.inserted_at }
   end
 end

@@ -17,7 +17,7 @@ defmodule LeroWeb.UserController do
   def register(conn, %{"user" => user_params, "password" => plain_password}) do
     case Accounts.create_user(Map.merge(user_params, %{"password" => plain_password})) do
       {:ok, user} ->
-        json(conn, %{ success: true, user: serialize_user(user) })
+        json(conn, %{ success: true, user: Accounts.serialize_user(user) })
 
       {:error, _} ->
         json(conn, %{ success: false, status: "Error" })
@@ -27,7 +27,7 @@ defmodule LeroWeb.UserController do
   def show(conn, _params) do
     if Guardian.Plug.authenticated?(conn) do
       user = Guardian.Plug.current_resource(conn)
-      json(conn, %{ success: true, user: serialize_user(user) })
+      json(conn, %{ success: true, user: Accounts.serialize_user(user) })
     else
       json(conn, %{ success: false, status: "unauthorized" })
     end
@@ -38,7 +38,7 @@ defmodule LeroWeb.UserController do
       user = Guardian.Plug.current_resource(conn)
       case Accounts.update_user(user, user_params) do
         {:ok, user} ->
-          json(conn, %{ success: true, user: serialize_user(user) })
+          json(conn, %{ success: true, user: Accounts.serialize_user(user) })
 
         {:error, _} ->
           json(conn, %{ success: false, status: "Error" })
@@ -63,9 +63,5 @@ defmodule LeroWeb.UserController do
     else
       json(conn, %{ success: false, status: "unauthorized" })
     end
-  end
-
-  def serialize_user(user) do
-    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description }
   end
 end

@@ -55,6 +55,16 @@ defmodule Lero.Messaging do
     end
   end
 
+  def start_conversation(user_id, target_id) do
+    if find_conversation(user_id, target_id) do
+      {:error, "Conversation already exists"}
+    else
+      {:ok, %Conversation{} = conversation} = create_conversation(%{title: nil, participants: [user_id, target_id] })
+      broadcast_new_conversation(conversation)
+      {:ok, conversation}
+    end
+  end
+
   def get_conversation_messages(conversation_id) do
     Repo.all(from ms in Message, where: ms.conversation_id == ^conversation_id, order_by: [desc: :inserted_at])
   end
@@ -93,14 +103,6 @@ defmodule Lero.Messaging do
     %Conversation{}
     |> Conversation.changeset(attrs)
     |> Repo.insert()
-  end
-
-  def start_conversation(user_id, target_id) do
-    if find_conversation(user_id, target_id) do
-      {:error, "Conversation already exists"}
-    else
-      create_conversation(%{title: nil, participants: [user_id, target_id] })
-    end
   end
 
   @doc """
@@ -180,7 +182,9 @@ defmodule Lero.Messaging do
   def get_message!(id), do: Repo.get!(Message, id)
 
   def send_message(sender_id, conversation_id, content) do
-    create_message(%{user_id: sender_id, conversation_id: conversation_id, content: content})
+    result = create_message(%{user_id: sender_id, conversation_id: conversation_id, content: content})
+    broadcast_upd_conversation(conversation_id)
+    result
   end
 
   def send_message_to(sender_id, target_id, content) do
@@ -251,5 +255,70 @@ defmodule Lero.Messaging do
   """
   def change_message(%Message{} = message, attrs \\ %{}) do
     Message.changeset(message, attrs)
+  end
+
+  def broadcast_new_conversation(%Lero.Messaging.Conversation{} = conversation) do
+    conversation.participants
+      |> Enum.map(fn id ->
+        LeroWeb.Endpoint.broadcast!("conversation:lobby", "new_conversation", %{ conversation: serialize_conversation(conversation, id) })
+      end)
+  end
+
+  def broadcast_new_conversation(conversation_id) when is_number(conversation_id) do
+    get_conversation!(conversation_id) |> broadcast_new_conversation()
+  end
+
+  def broadcast_upd_conversation(%Lero.Messaging.Conversation{} = conversation) do
+    conversation.participants
+      |> Enum.map(fn id ->
+        LeroWeb.Endpoint.broadcast!("conversation:lobby", "upd_conversation", %{ conversation: serialize_conversation(conversation, id) })
+      end)
+  end
+
+  def broadcast_upd_conversation(conversation_id) when is_number(conversation_id) do
+    get_conversation!(conversation_id) |> broadcast_upd_conversation()
+  end
+
+  def serialize_message(message, user_id) do
+    %{
+      id: message.id,
+      content: message.content,
+      conversation_id: message.conversation_id,
+      direction: (if message.user_id == user_id, do: "out", else: "in"),
+      time: message.inserted_at
+    }
+  end
+
+  def serialize_message(message) do
+    %{
+      id: message.id,
+      user_id: message.user_id,
+      content: message.content,
+      conversation_id: message.conversation_id,
+      time: message.inserted_at
+    }
+  end
+
+  def serialize_conversation(conversation) do
+    %{
+      id: conversation.id,
+      title: conversation.title,
+      participants:
+        conversation.participants
+          |> Enum.map(fn x -> Accounts.serialize_user(x) end)
+    }
+  end
+
+  def serialize_conversation(conversation, user_id) do
+    title = if conversation.title, do: conversation.title, else: get_conversation_title_based_on_user(conversation, user_id)
+    %{
+      id: conversation.id,
+      title: title,
+      userId: user_id,
+      participants:
+        conversation.participants
+          |> Enum.reject(fn x -> x == user_id end)
+          |> Enum.map(fn x -> Accounts.serialize_user(x) end)
+    }
   end
 end

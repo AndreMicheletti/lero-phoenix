@@ -143,4 +143,13 @@ defmodule Lero.Accounts do
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end
+
+  def serialize_user(%Lero.Accounts.User{} = user) do
+    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description }
+  end
+
+  def serialize_user(user_id) do
+    user = get_user!(user_id)
+    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description }
+  end
 end

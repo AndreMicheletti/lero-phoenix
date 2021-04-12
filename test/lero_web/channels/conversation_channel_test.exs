@@ -16,7 +16,7 @@ defmodule LeroWeb.ConversationChannelTest do
 
       {:ok, _, socket} =
         LeroWeb.UserSocket
-        |> socket("user_id", %{current_user: user})
+        |> socket("socket", %{current_user: user})
         |> subscribe_and_join(LeroWeb.ConversationChannel, "conversation:#{conversation.id}")
 
       %{socket: socket}
@@ -35,6 +35,43 @@ defmodule LeroWeb.ConversationChannelTest do
       assert serialized_message.conversation_id == message.conversation_id
       assert serialized_message.user_id == message.user_id
       assert Map.has_key?(serialized_message, :time)
+    end
+  end
+
+  describe "channel conversation:lobby" do
+    setup do
+      {:ok, user2} = Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo", password: "123"})
+      {:ok, user3} = Accounts.create_user(%{name: "User 3", description: "hello world", secret_code: "yoo3", password: "123"})
+
+      {:ok, user} = Accounts.create_user(%{name: "Dummy User", description: "hello world", secret_code: "mycode", password: "123"})
+      {:ok, jwt, _claims} = Guardian.encode_and_sign(user)
+
+      {:ok, _, socket} =
+        LeroWeb.UserSocket
+        |> socket("socket", %{current_user: user})
+        |> subscribe_and_join(LeroWeb.ConversationChannel, "conversation:lobby")
+
+      %{socket: socket, me: user, other: user2}
+    end
+
+    test "receive broadcast `new_conversation` when conversation is created", %{socket: socket, me: user, other: user2} do
+      conversation = Messaging.find_or_start_conversation(user.id, user2.id)
+
+      assert_broadcast "new_conversation", %{ conversation: payload }, 100
+      assert payload.id == conversation.id
+      assert payload.title == user2.name
+    end
+
+    test "receive broadcast `upd_conversation` when message is sent to conversation", %{socket: socket, me: user, other: user2} do
+      conversation = Messaging.find_or_start_conversation(user.id, user2.id)
+
+      assert_broadcast "new_conversation", %{ conversation: payload }, 100
+
+      Messaging.send_message(user.id, conversation.id, "hello world")
+
+      assert_broadcast "upd_conversation", _payload, 100
+      assert payload.id == conversation.id
+      assert payload.title == user2.name
     end
   end
 end

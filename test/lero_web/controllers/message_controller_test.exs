@@ -88,11 +88,11 @@ defmodule LeroWeb.MessageControllerTest do
 
       body_params = %{"content" => "hello", "secret_code" => target.secret_code }
       conn = post(conn, Routes.message_path(conn, :send, body_params))
-      assert %{ "success" => true, "message" => message } = json_response(conn, 200)
+      assert %{ "success" => true, "message" => serialized_message } = json_response(conn, 200)
 
       conversation = Messaging.find_conversation(user.id, target.id)
       assert conversation != nil
-      assert message["conversationId"] == conversation.id
+      assert serialized_message["conversation_id"] == conversation.id
     end
 
     test "send message to unexisting user should fail", %{conn: conn} do
