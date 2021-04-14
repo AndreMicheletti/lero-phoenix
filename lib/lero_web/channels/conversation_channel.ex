@@ -29,7 +29,7 @@ defmodule LeroWeb.ConversationChannel do
   end
 
   @impl true
-  def handle_in("send_message", %{"content" => content}, socket) do
+  def handle_in("send_message", content, socket) do
     case socket.assigns do
       %{ current_user: user, conversation: conversation } ->
         {:ok, message} = Messaging.send_message(user.id, conversation.id, content)
