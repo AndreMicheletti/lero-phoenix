@@ -5,7 +5,8 @@ defmodule LeroWeb.MessageControllerTest do
   alias Lero.Messaging.Conversation
   alias Lero.Accounts
 
-  @create_attrs %{content: "some content"}
+  @sample_message %{"ct" => "123", "iv" => "asd", "salt" => "xyz"}
+  @create_attrs %{content: %{"ct" => "123", "iv" => "asd", "salt" => "xyz"}}
   @update_attrs %{content: "some updated content"}
   @invalid_attrs %{content: nil}
 
@@ -44,10 +45,10 @@ defmodule LeroWeb.MessageControllerTest do
       user2 = Accounts.get_user_by_name("User 2")
       conversation = conversation_fixture()
       Enum.each(1..out_messages_len, fn(x) ->
-        Messaging.send_message(user.id, conversation.id, "hello")
+        Messaging.send_message(user.id, conversation.id, @sample_message)
       end)
       Enum.each(1..in_messages_len, fn(x) ->
-        Messaging.send_message(user2.id, conversation.id, "hello")
+        Messaging.send_message(user2.id, conversation.id, @sample_message)
       end)
       conversation
     end
@@ -86,7 +87,7 @@ defmodule LeroWeb.MessageControllerTest do
 
       assert is_nil(Messaging.find_conversation(user.id, target.id))
 
-      body_params = %{"content" => "hello", "secret_code" => target.secret_code }
+      body_params = %{"content" => @sample_message, "secret_code" => target.secret_code }
       conn = post(conn, Routes.message_path(conn, :send, body_params))
       assert %{ "success" => true, "message" => serialized_message } = json_response(conn, 200)
 

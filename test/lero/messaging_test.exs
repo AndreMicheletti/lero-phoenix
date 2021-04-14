@@ -4,6 +4,8 @@ defmodule Lero.MessagingTest do
   alias Lero.Messaging
   alias Lero.Accounts
 
+  @sample_message %{"ct" => "123", "iv" => "asd", "salt" => "xyz"}
+
   describe "conversations" do
     alias Lero.Messaging.Conversation
     setup [:create_users]
@@ -69,8 +71,8 @@ defmodule Lero.MessagingTest do
       user2 = Accounts.get_user_by_name("User 2")
       conversation = conversation_fixture(%{ title: "Conversation", participants: [user1.id, user2.id] })
 
-      Messaging.send_message(user1.id, conversation.id, "hello")  # message by sender
-      Messaging.send_message(user2.id, conversation.id, "hello back")  # message by recipient
+      Messaging.send_message(user1.id, conversation.id, @sample_message)  # message by sender
+      Messaging.send_message(user2.id, conversation.id, @sample_message)  # message by recipient
 
       assert length(Messaging.get_conversation_messages(conversation.id)) == 2
     end
@@ -98,7 +100,7 @@ defmodule Lero.MessagingTest do
     test "get_message!/1 by id works" do
       user1 = Accounts.get_user_by_name("User 1")
       conversation = conversation_fixture_2()
-      message = message_fixture(%{ content: "abc123", user_id: user1.id, conversation_id: conversation.id })
+      message = message_fixture(%{ content: @sample_message, user_id: user1.id, conversation_id: conversation.id })
       fetched = Messaging.get_message!(message.id)
       assert message.id == fetched.id
       assert message.conversation_id == conversation.id
@@ -110,7 +112,7 @@ defmodule Lero.MessagingTest do
       user2 = Accounts.get_user_by_name("User 2")
       assert Messaging.find_conversation(user1.id, user2.id) == nil
 
-      {:ok, message} = Messaging.send_message_to(user1.id, user2.id, "random text")
+      {:ok, message} = Messaging.send_message_to(user1.id, user2.id, @sample_message)
 
       assert Messaging.find_conversation(user1.id, user2.id) != nil
       assert Messaging.find_conversation(user2.id, user1.id) != nil
@@ -122,7 +124,7 @@ defmodule Lero.MessagingTest do
       user2 = Accounts.get_user_by_name("User 2")
       conversation = conversation_fixture_2()
 
-      {:ok, message} = Messaging.send_message_to(user1.id, user2.id, "random text")
+      {:ok, message} = Messaging.send_message_to(user1.id, user2.id, @sample_message)
       assert message.conversation_id == conversation.id
     end
   end

@@ -31,7 +31,7 @@ defmodule LeroWeb.ConversationControllerTest do
 
       Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo", password: "123"})
       Accounts.create_user(%{name: "User 3", description: "hello world", secret_code: "yoo3", password: "123"})
-  
+
       {:ok, conn: conn}
     end
 
