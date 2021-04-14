@@ -3,7 +3,7 @@ defmodule Lero.Messaging.Message do
   import Ecto.Changeset
 
   schema "messages" do
-    field :content, :string
+    field :content, :map
 
     belongs_to :conversation, Lero.Messaging.Conversation
     belongs_to :user, Lero.Accounts.User
