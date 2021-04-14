@@ -4,6 +4,8 @@ defmodule LeroWeb.ConversationChannelTest do
   alias Lero.Accounts
   alias Lero.Messaging
 
+  @sample_message %{"ct" => "123", "iv" => "asd", "salt" => "xyz"}
+
   describe "channel conversation:id" do
     setup do
       {:ok, user2} = Accounts.create_user(%{name: "User 2", description: "hello world", secret_code: "yoo", password: "123"})
@@ -23,7 +25,7 @@ defmodule LeroWeb.ConversationChannelTest do
     end
 
     test "send_message replies with status ok and broadcasts 'new_message'", %{socket: socket} do
-      ref = push socket, "send_message", %{"content" => "hello"}
+      ref = push socket, "send_message", %{"content" => @sample_message}
       assert_reply ref, :ok, %{message_id: message_id}
       assert message_id
 
@@ -35,6 +37,7 @@ defmodule LeroWeb.ConversationChannelTest do
       assert serialized_message.conversation_id == message.conversation_id
       assert serialized_message.user_id == message.user_id
       assert Map.has_key?(serialized_message, :time)
+      assert Map.has_key?(serialized_message, :content)
     end
   end
 
@@ -67,7 +70,7 @@ defmodule LeroWeb.ConversationChannelTest do
 
       assert_broadcast "new_conversation", %{ conversation: payload }, 100
 
-      Messaging.send_message(user.id, conversation.id, "hello world")
+      Messaging.send_message(user.id, conversation.id, @sample_message)
 
       assert_broadcast "upd_conversation", _payload, 100
       assert payload.id == conversation.id

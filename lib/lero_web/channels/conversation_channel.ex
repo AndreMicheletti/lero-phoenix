@@ -42,9 +42,6 @@ defmodule LeroWeb.ConversationChannel do
 
   @impl true
   def handle_out("new_conversation", %{conversation: serialized_convs} = payload, socket) do
-    IO.inspect("HANDLE OUT new_conversation")
-    IO.inspect(serialized_convs.userId)
-    IO.inspect(socket.assigns.current_user.id)
     if (serialized_convs.userId == socket.assigns.current_user.id) do
       push socket, "new_conversation", payload
     end
@@ -53,7 +50,6 @@ defmodule LeroWeb.ConversationChannel do
 
   @impl true
   def handle_out("upd_conversation", %{conversation: serialized_convs} = payload, socket) do
-    IO.inspect("HANDLE OUT upd_conversation")
     if (serialized_convs.userId == socket.assigns.current_user.id) do
       push socket, "upd_conversation", payload
     end
