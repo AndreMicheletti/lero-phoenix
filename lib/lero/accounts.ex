@@ -145,11 +145,11 @@ defmodule Lero.Accounts do
   end
 
   def serialize_user(%Lero.Accounts.User{} = user) do
-    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description }
+    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description, coins: user.coins }
   end
 
   def serialize_user(user_id) do
     user = get_user!(user_id)
-    %{ id: user.id, name: user.name, secretCode: user.secret_code, description: user.description }
+    serialize_user(user)
   end
 end
