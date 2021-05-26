@@ -10,10 +10,25 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- script: |
+    sudo apt-get install wget ca-certificates
+    wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
+    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+    sudo apt-get update
+    sudo apt-get install esl-erlang
+    sudo apt-get install elixir
+    mix local.hex --force
+    mix local.rebar --force
+    sudo apt-get install postgresql postgresql-contrib
+    sudo service postgresql start
+    sudo -u postgres bash -c "psql -c \"ALTER USER postgres WITH PASSWORD 'postgres' SUPERUSER;\""
+    sudo apt-get install nodejs
+  displayName: 'Install dependencies'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    set MIX_ENV=test
+    mix deps.get
+    mix deps.compile
+    mix test
+  displayName: 'Run tests'
