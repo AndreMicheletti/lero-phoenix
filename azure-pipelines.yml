@@ -29,5 +29,5 @@ steps:
     set MIX_ENV=test
     mix deps.get
     mix deps.compile
-    mix test
+    mix test --cover
   displayName: 'Run tests'
